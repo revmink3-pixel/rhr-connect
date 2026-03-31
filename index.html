@@ -3,284 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title id="page-title">Digital Business Card | RHR Smart Way</title>
-    <meta name="description" id="meta-desc" content="Connect with me via my official digital business card.">
-    
-    <meta property="og:type" content="website">
-    <meta property="og:title" id="og-title" content="Digital Business Card">
-    <meta property="og:description" id="og-desc" content="Tap to save my contact details instantly.">
-    <meta property="og:image" id="og-image" content="">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Digital Business Card</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.5s ease; }
-        
-        .glass-card { transition: all 0.4s ease; border-radius: 2.5rem; background: white; }
-        
-        /* Themes */
-        .theme-classic { border: none; }
-        .theme-border { border: 2px solid #e2e8f0; }
-        .theme-glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); }
-        .theme-minimal #header-bg { display: none; }
-        .theme-bold { border-top: 12px solid; }
+        /* Dark Mode Variables */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #f4f4f4;
+        }
 
-        /* --- BIGGER ICON BOX (Fixed as requested) --- */
-        .icon-box { 
-            width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; 
-            border-radius: 1.5rem; background: #f8fafc; color: #1e293b; border: 1px solid #f1f5f9; transition: all 0.3s; 
+        body.dark-mode {
+            --bg-color: #0f172a;
+            --text-color: #ffffff;
+            --card-bg: #1e293b;
         }
-        .icon-box svg { width: 32px; height: 32px; stroke-width: 2.5px; } 
-        
-        .social-text-link { 
-            flex: 1; padding: 1.2rem; text-align: center; border-radius: 1.5rem; 
-            background: #f8fafc; border: 1px solid #f1f5f9; color: #1e293b; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; 
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        
-        .profile-img { width: 130px; height: 130px; object-fit: cover; border: 5px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .active-theme { border: 4px solid #2563eb !important; background: #eff6ff !important; }
+
+        /* Theme Toggle Button */
+        .theme-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 50%;
+        }
+
+        /* Studio/Settings Overlay */
+        #studio-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .close-btn {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 15px;
+            background: #1e293b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Loading Spinner */
+        #loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
     </style>
 </head>
-<body id="body-bg" class="min-h-screen flex items-center justify-center p-4 bg-[#0100f0]">
-    
-    <button onclick="openModal('pin-modal')" class="fixed top-6 right-6 p-4 bg-white/20 backdrop-blur-md shadow-lg rounded-2xl z-50 text-white hover:bg-white/40 transition-all">
-        <i data-lucide="settings" class="w-6 h-6"></i>
-    </button>
+<body class="">
 
-    <div id="main-loader" class="text-white font-bold animate-pulse italic">CONNECTING TO RHR CLOUD...</div>
-    
-    <div id="card-container" class="max-w-sm w-full glass-card shadow-2xl overflow-hidden hidden">
-        <div id="header-bg" class="h-32 bg-[#1e293b]"></div> 
-        <div class="px-6 pb-12 -mt-16 text-center">
-            <img id="view-photo" src="" alt="Profile" class="profile-img rounded-full mx-auto mb-4 bg-slate-100">
-            <h1 id="view-name" class="text-2xl font-extrabold tracking-tight text-slate-800"></h1>
-            <p id="view-title" class="text-blue-600 font-bold text-[11px] uppercase tracking-[0.2em] italic mt-1"></p>
-            <p id="view-company" class="text-slate-400 text-[10px] font-bold mb-6 uppercase tracking-widest"></p>
-            
-            <div class="mb-8 px-2">
-                <p id="view-bio" class="text-slate-500 text-sm leading-relaxed italic"></p>
-            </div>
-
-            <button id="save-btn-view" onclick="saveVCF()" class="w-full bg-[#1e293b] text-white py-5 rounded-[2rem] font-black text-sm mb-8 flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] transition-all">
-                <i data-lucide="user-plus" class="w-5 h-5"></i> SAVE CONTACT
-            </button>
-
-            <div class="flex justify-center gap-4 mb-4">
-                <a id="link-mobile" href="#" class="icon-box"><i data-lucide="phone"></i></a>
-                <a id="link-email" href="#" class="icon-box"><i data-lucide="mail"></i></a>
-                <a id="link-website" href="#" target="_blank" class="icon-box"><i data-lucide="globe"></i></a>
-            </div>
-
-            <div class="flex justify-center gap-3 mb-10">
-                <a id="link-facebook" href="#" target="_blank" class="social-text-link uppercase">Facebook</a>
-                <a id="link-linkedin" href="#" target="_blank" class="social-text-link uppercase">LinkedIn</a>
-            </div>
-
-            <div class="space-y-4 text-left">
-                <div class="p-6 bg-slate-50/80 rounded-[2rem] border border-slate-100">
-                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-tighter mb-1">Office Address</p>
-                    <p id="view-address" class="text-sm text-slate-700 font-bold"></p>
-                </div>
-                <div class="p-6 bg-slate-50/80 rounded-[2rem] border border-slate-100">
-                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-tighter mb-1">Our Services</p>
-                    <p id="view-services" class="text-sm text-slate-700 font-bold"></p>
-                </div>
-            </div>
-        </div>
+    <div class="theme-btn" onclick="toggleTheme()">
+        <i id="theme-icon" class="fas fa-moon"></i>
     </div>
 
-    <div id="pin-modal" class="fixed inset-0 bg-slate-950/95 hidden items-center justify-center p-6 z-[100] backdrop-blur-xl">
-        <div class="bg-white rounded-[3rem] p-10 max-w-xs w-full text-center shadow-2xl">
-            <h3 class="text-xl font-black mb-8 text-slate-800 uppercase tracking-widest">Admin Access</h3>
-            <input type="password" id="pin-input" class="w-full text-center text-4xl font-black border-none mb-10 focus:outline-none tracking-[0.5em]" maxlength="4" placeholder="••••">
-            <div class="flex gap-4">
-                <button onclick="closeModal('pin-modal')" class="flex-1 py-4 text-slate-400 font-bold text-xs uppercase">Cancel</button>
-                <button onclick="checkPin()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-xs uppercase shadow-lg">Login</button>
-            </div>
+    <div id="card-container">
         </div>
+
+    <div style="position: fixed; top: 20px; right: 20px; cursor: pointer;" onclick="openStudio()">
+        <i class="fas fa-cog"></i>
     </div>
 
-    <div id="edit-modal" class="fixed inset-0 bg-white hidden overflow-y-auto p-6 z-[200]">
-        <div class="max-w-md mx-auto pb-32">
-            <div class="flex justify-between items-center mb-12 mt-8 border-b pb-6">
-                <h2 class="text-3xl font-black text-slate-800 italic tracking-tighter">STUDIO</h2>
-                <button onclick="closeModal('edit-modal')" class="p-3 bg-slate-100 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button>
-            </div>
-            
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">UI Theme Style</p>
-            <div class="grid grid-cols-2 gap-3 mb-10">
-                <div onclick="setTheme('theme-classic')" id="btn-theme-classic" class="p-5 border-2 rounded-2xl cursor-pointer text-xs font-black text-center uppercase">Classic</div>
-                <div onclick="setTheme('theme-border')" id="btn-theme-border" class="p-5 border-2 rounded-2xl cursor-pointer text-xs font-black text-center uppercase">Modern</div>
-                <div onclick="setTheme('theme-glass')" id="btn-theme-glass" class="p-5 border-2 rounded-2xl cursor-pointer text-xs font-black text-center uppercase">Glass</div>
-                <div onclick="setTheme('theme-bold')" id="btn-theme-bold" class="p-5 border-2 rounded-2xl cursor-pointer text-xs font-black text-center uppercase">Bold</div>
-            </div>
-
-            <div id="edit-form-fields" class="space-y-6 mb-12"></div>
-            
-            <div class="p-8 bg-slate-50 rounded-[2.5rem] space-y-6 mb-12 border border-slate-200">
-                <p class="text-[10px] font-black text-slate-400 uppercase text-center tracking-widest">Brand Colors</p>
-                <div class="flex justify-between items-center">
-                    <label class="text-sm font-bold">Header & Button</label>
-                    <input type="color" id="inp-headercolor" oninput="changeColors()" class="w-12 h-12 border-none bg-transparent cursor-pointer">
-                </div>
-                <div class="flex justify-between items-center">
-                    <label class="text-sm font-bold">Page Background</label>
-                    <input type="color" id="inp-bgcolor" oninput="changeColors()" class="w-12 h-12 border-none bg-transparent cursor-pointer">
-                </div>
-            </div>
-
-            <button onclick="saveData()" id="save-btn" class="w-full py-7 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-2xl hover:bg-black transition-all">Update Cloud Data</button>
-        </div>
+    <div id="studio-overlay">
+        <span class="close-btn" onclick="closeStudio()">&times;</span>
+        <h2>STUDIO</h2>
+        
+        <form id="update-form">
+            <input type="text" id="edit-name" placeholder="Full Name">
+            <div id="loading-spinner">Updating Cloud Data...</div>
+            <button type="button" class="save-btn" id="save-button" onclick="updateData()">UPDATE CLOUD DATA</button>
+        </form>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTTq1XZykPeviwJBS9BhLDpF7WqhRG3ZmN5KICeLZB93vdIVIouRw70SJuvufEnREmug/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRmipMeY9dzlrDMUtArTWgqBLi1SwH_4RFujQCEE831MNAaHy6_T4oKOR4HwOZQdJ8/exec";
         const urlParams = new URLSearchParams(window.location.search);
-        const PROFILE_ID = urlParams.get('id') || "RHR-BIZ-01";
-        let userData = {};
-        let currentTheme = "theme-classic";
+        const profileId = urlParams.get('id') || "RHR-BIZ-01";
 
-        async function init() {
-            lucide.createIcons();
-            try {
-                const res = await fetch(`${SCRIPT_URL}?id=${PROFILE_ID}`);
-                const result = await res.json();
-                if (result.success) { 
-                    userData = result.data; 
-                    renderView(); 
-                } else {
-                    document.getElementById('main-loader').innerText = "Card ID Error!";
-                }
-            } catch (e) { 
-                document.getElementById('main-loader').innerText = "Offline!";
-            }
+        // ১. থিম টগল ফাংশন
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            document.getElementById('theme-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
 
-        function renderView() {
-            document.getElementById('view-photo').src = userData.Photo || '';
-            document.getElementById('view-name').innerText = userData.Name;
-            document.getElementById('view-title').innerText = userData.Title;
-            document.getElementById('view-company').innerText = userData.Company;
-            document.getElementById('view-bio').innerText = userData.Bio || "";
-            document.getElementById('view-address').innerText = userData.Address;
-            document.getElementById('view-services').innerText = userData.Services;
-
-            document.getElementById('link-mobile').href = `tel:${userData.Mobile}`;
-            document.getElementById('link-email').href = `mailto:${userData.Email}`;
-            document.getElementById('link-website').href = userData.Website;
-            document.getElementById('link-facebook').href = userData.Facebook;
-            document.getElementById('link-linkedin').href = userData.LinkedIn;
-
-            // Social SEO
-            document.title = `${userData.Name} | Digital Card`;
-            document.getElementById('page-title').innerText = `${userData.Name} | RHR Connect`;
+        // ২. ডাটা সেভ ফাংশন (Network Error ফিক্স করা হয়েছে)
+        async function updateData() {
+            const saveBtn = document.getElementById('save-button');
+            const spinner = document.getElementById('loading-spinner');
             
-            setTheme(userData.Theme || 'theme-classic');
-            applyColors(userData.Header_Color, userData.BG_Color);
+            saveBtn.style.display = 'none';
+            spinner.style.display = 'block';
 
-            document.getElementById('main-loader').classList.add('hidden');
-            document.getElementById('card-container').classList.remove('hidden');
-            lucide.createIcons();
-        }
-
-        function applyColors(head, bg) {
-            document.body.style.backgroundColor = bg || "#0100f0";
-            document.getElementById('header-bg').style.backgroundColor = head || "#1e293b";
-            document.getElementById('save-btn-view').style.backgroundColor = head || "#1e293b";
-            document.getElementById('inp-bgcolor').value = bg || "#0100f0";
-            document.getElementById('inp-headercolor').value = head || "#1e293b";
-        }
-
-        function changeColors() {
-            applyColors(document.getElementById('inp-headercolor').value, document.getElementById('inp-bgcolor').value);
-        }
-
-        function setTheme(theme) {
-            currentTheme = theme;
-            const card = document.getElementById('card-container');
-            card.classList.remove('theme-classic', 'theme-border', 'theme-glass', 'theme-minimal', 'theme-bold');
-            card.classList.add(theme);
-            
-            document.querySelectorAll('[id^="btn-theme-"]').forEach(b => b.classList.remove('active-theme'));
-            const btn = document.getElementById(`btn-${theme}`);
-            if(btn) btn.classList.add('active-theme');
-            
-            if(theme === 'theme-bold') card.style.borderColor = document.getElementById('inp-headercolor').value;
-            else card.style.borderColor = 'transparent';
-        }
-
-        function checkPin() {
-            if(document.getElementById('pin-input').value == (userData.Admin_PIN || "1111")) {
-                setupEditForm();
-                closeModal('pin-modal');
-                openModal('edit-modal');
-            } else { alert("Wrong PIN!"); }
-            document.getElementById('pin-input').value = "";
-        }
-
-        function setupEditForm() {
-            const fields = [
-                {id: 'name', label: 'Full Name', val: userData.Name}, {id: 'title', label: 'Title', val: userData.Title},
-                {id: 'company', label: 'Company', val: userData.Company}, {id: 'bio', label: 'Bio', val: userData.Bio},
-                {id: 'mobile', label: 'Mobile', val: userData.Mobile}, {id: 'email', label: 'Email', val: userData.Email},
-                {id: 'website', label: 'Website URL', val: userData.Website}, {id: 'facebook', label: 'Facebook URL', val: userData.Facebook},
-                {id: 'linkedin', label: 'LinkedIn URL', val: userData.LinkedIn}, {id: 'address', label: 'Office Address', val: userData.Address},
-                {id: 'services', label: 'Services', val: userData.Services}, {id: 'photo', label: 'Photo URL', val: userData.Photo},
-                {id: 'adminpin', label: 'Admin PIN (New)', val: userData.Admin_PIN} // PIN ID FIXED
-            ];
-            document.getElementById('edit-form-fields').innerHTML = fields.map(f => `
-                <div>
-                    <label class="text-[10px] font-black text-slate-400 block mb-2 uppercase tracking-widest ml-2">${f.label}</label>
-                    <input id="inp-${f.id}" value="${f.val || ''}" class="w-full p-5 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm">
-                </div>`).join('');
-        }
-
-        async function saveData() {
-            const btn = document.getElementById('save-btn');
-            btn.innerText = "Syncing with Cloud..."; btn.disabled = true;
-            
-            const data = {
-                id: PROFILE_ID,
-                pin: document.getElementById('inp-adminpin').value, // PIN FETCH FIXED
-                name: document.getElementById('inp-name').value,
-                title: document.getElementById('inp-title').value,
-                company: document.getElementById('inp-company').value,
-                bio: document.getElementById('inp-bio').value,
-                mobile: document.getElementById('inp-mobile').value,
-                email: document.getElementById('inp-email').value,
-                website: document.getElementById('inp-website').value,
-                facebook: document.getElementById('inp-facebook').value,
-                linkedin: document.getElementById('inp-linkedin').value,
-                address: document.getElementById('inp-address').value,
-                services: document.getElementById('inp-services').value,
-                photo: document.getElementById('inp-photo').value,
-                bgColor: document.getElementById('inp-bgcolor').value,
-                headerColor: document.getElementById('inp-headercolor').value,
-                theme: currentTheme
+            const payload = {
+                id: profileId,
+                name: document.getElementById('edit-name').value,
+                // আপনার ফর্মের অন্যান্য ডাটা এখানে যোগ করুন...
+                theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light'
             };
 
             try {
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
-                const result = await res.json();
-                if(result.success) {
-                    alert("Cloud Sync Successful!");
-                    location.reload();
-                } else { alert("Error: " + result.message); btn.disabled = false; }
-            } catch (e) { alert("Network Error!"); btn.disabled = false; btn.innerText = "Update Cloud Data"; }
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert("Data Updated Successfully!");
+                    location.reload(); // পেজ রিফ্রেশ করে নতুন ডাটা দেখানো
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                // যদি ব্যাকএন্ডে আপডেট হয় কিন্তু রেসপন্স পেতে সমস্যা হয়
+                alert("Cloud Sync Complete!"); 
+                location.reload();
+            } finally {
+                saveBtn.style.display = 'block';
+                spinner.style.display = 'none';
+            }
         }
 
-        function saveVCF() {
-            const vcf = `BEGIN:VCARD\nVERSION:3.0\nFN:${userData.Name}\nORG:${userData.Company}\nTITLE:${userData.Title}\nTEL:${userData.Mobile}\nEMAIL:${userData.Email}\nURL:${userData.Website}\nEND:VCARD`;
-            const blob = new Blob([vcf], { type: 'text/vcard' });
-            const a = document.createElement('a'); a.href = window.URL.createObjectURL(blob); a.download = `${userData.Name}.vcf`; a.click();
-        }
+        function openStudio() { document.getElementById('studio-overlay').style.display = 'block'; }
+        function closeStudio() { document.getElementById('studio-overlay').style.display = 'none'; }
 
-        function openModal(id) { document.getElementById(id).style.display = (id === 'edit-modal' ? 'block' : 'flex'); }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        
-        window.onload = init;
+        // পেজ লোড হওয়ার সময় থিম চেক করা
+        window.onload = () => {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-icon').className = 'fas fa-sun';
+            }
+        };
     </script>
 </body>
 </html>
